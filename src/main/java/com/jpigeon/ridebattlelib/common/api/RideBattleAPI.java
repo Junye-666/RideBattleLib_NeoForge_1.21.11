@@ -70,7 +70,8 @@ public class RideBattleAPI {
     }
 
     /**
-     * 解除玩家变身。
+     * 尝试让玩家变身
+     * 注意：此方法为触发玩家身上驱动器，作为在玩家未手动触发变身时的强制触发手段
      *
      * @param player 玩家
      * @return 是否成功解除变身
