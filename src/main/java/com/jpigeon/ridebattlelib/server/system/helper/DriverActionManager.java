@@ -78,10 +78,13 @@ public class DriverActionManager {
             HenshinSystem.getInstance().switchForm(player, formId);
         }
 
+        RideBattleLib.LOGGER.info("玩家 {} 变身为 {}", player.getName().getString(), formId);
+
         // 重置状态
         data.setState(HenshinState.TRANSFORMED);
         data.setPendingFormId(null);
 
+        // 同步状态
         if (player instanceof ServerPlayer serverPlayer) {
             SyncManager.getInstance().syncHenshinState(serverPlayer);
         }
