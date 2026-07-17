@@ -6,6 +6,7 @@ import com.jpigeon.ridebattlelib.common.network.packet.*;
 import com.jpigeon.ridebattlelib.server.system.DriverSystem;
 import com.jpigeon.ridebattlelib.server.system.HenshinSystem;
 import com.jpigeon.ridebattlelib.server.system.SkillSystem;
+import com.jpigeon.ridebattlelib.server.system.helper.DriverActionManager;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class PacketHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         event.registrar(RideBattleLib.MODID)
-                .versioned("1.2.4").optional()
+                .versioned("1.2.6").optional()
                 .playToServer(DriverActionPacket.TYPE, DriverActionPacket.STREAM_CODEC,
                         (payload, context) -> {
                             Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
@@ -100,6 +101,15 @@ public class PacketHandler {
 
                             // 服务端广播
                             sender.level().playSound(null, sender, soundEvent, SoundSource.PLAYERS, payload.volume(), payload.pitch());
+                        }
+                )
+                .playToServer(
+                        CompleteHenshinPacket.TYPE, CompleteHenshinPacket.STREAM_CODEC,
+                        (payload, context) -> {
+                            Player targetPlayer = context.player().level().getPlayerByUUID(payload.playerId());
+                            if (targetPlayer != null) {
+                                DriverActionManager.getInstance().completeTransformation(targetPlayer);
+                            }
                         }
                 )
 
