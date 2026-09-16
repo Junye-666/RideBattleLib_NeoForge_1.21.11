@@ -1,29 +1,25 @@
 package com.jpigeon.ridebattlelib.common.network.packet;
 
-import com.jpigeon.ridebattlelib.RideBattleLib;
-import net.minecraft.core.UUIDUtil;
+import com.jpigeon.ridebattlelib.common.network.RBLPacket;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
+public record HenshinPacket(Identifier riderId) implements RBLPacket {
+    public static final Identifier ID = RBLPacket.ofPath("henshin");
 
-public record HenshinPacket(UUID playerId, Identifier riderId) implements CustomPacketPayload {
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "henshin");
-
-    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull HenshinPacket> STREAM_CODEC =
+    public static final StreamCodec<RegistryFriendlyByteBuf, HenshinPacket> STREAM_CODEC =
             StreamCodec.composite(
-                    UUIDUtil.STREAM_CODEC,
-                    HenshinPacket::playerId,
                     Identifier.STREAM_CODEC,
                     HenshinPacket::riderId,
                     HenshinPacket::new
             );
 
-    public static final Type<@NotNull HenshinPacket> TYPE = new Type<>(ID);
+    public static final Type<HenshinPacket> TYPE = new Type<>(ID);
+
 
     @Override
-    public @NotNull Type<?> type() { return TYPE; }
+    public Identifier id() {
+        return ID;
+    }
 }

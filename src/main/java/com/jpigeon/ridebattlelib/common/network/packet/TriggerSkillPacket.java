@@ -1,28 +1,25 @@
 package com.jpigeon.ridebattlelib.common.network.packet;
 
-import com.jpigeon.ridebattlelib.RideBattleLib;
-import net.minecraft.core.UUIDUtil;
+import com.jpigeon.ridebattlelib.common.network.RBLPacket;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
+public final class TriggerSkillPacket implements RBLPacket {
+    private TriggerSkillPacket() {
+    }
 
-public record TriggerSkillPacket(UUID playerId) implements CustomPacketPayload {
-    public static final Identifier ID =
-            Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "trigger_skill");
+    public static final Identifier ID = RBLPacket.ofPath("trigger_skill");
 
-    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull TriggerSkillPacket> STREAM_CODEC =
-            StreamCodec.composite(
-                    UUIDUtil.STREAM_CODEC,
-                    TriggerSkillPacket::playerId,
-                    TriggerSkillPacket::new
-            );
+    public static final TriggerSkillPacket INSTANCE = new TriggerSkillPacket();
 
-    public static final Type<@NotNull TriggerSkillPacket> TYPE = new Type<>(ID);
+    public static final StreamCodec<RegistryFriendlyByteBuf, TriggerSkillPacket> STREAM_CODEC =
+            StreamCodec.unit(INSTANCE);
+
+    public static final Type<TriggerSkillPacket> TYPE = new Type<>(ID);
 
     @Override
-    public @NotNull Type<?> type() { return TYPE; }
+    public Identifier id() {
+        return ID;
+    }
 }

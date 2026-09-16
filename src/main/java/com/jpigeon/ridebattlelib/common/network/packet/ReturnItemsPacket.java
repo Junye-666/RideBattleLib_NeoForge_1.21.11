@@ -1,20 +1,25 @@
 package com.jpigeon.ridebattlelib.common.network.packet;
 
-import com.jpigeon.ridebattlelib.RideBattleLib;
+import com.jpigeon.ridebattlelib.common.network.RBLPacket;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
 
-public record ReturnItemsPacket() implements CustomPacketPayload {
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "return_items");
+public final class ReturnItemsPacket implements RBLPacket {
+    private ReturnItemsPacket() {
+    }
 
-    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull ReturnItemsPacket> STREAM_CODEC =
-            StreamCodec.unit(new ReturnItemsPacket());
+    public static final Identifier ID = RBLPacket.ofPath("return_items");
 
-    public static final Type<@NotNull ReturnItemsPacket> TYPE = new Type<>(ID);
+    public static final ReturnItemsPacket INSTANCE = new ReturnItemsPacket();
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, ReturnItemsPacket> STREAM_CODEC =
+            StreamCodec.unit(INSTANCE);
+
+    public static final Type<ReturnItemsPacket> TYPE = new Type<>(ID);
 
     @Override
-    public @NotNull Type<?> type() { return TYPE; }
+    public Identifier id() {
+        return ID;
+    }
 }

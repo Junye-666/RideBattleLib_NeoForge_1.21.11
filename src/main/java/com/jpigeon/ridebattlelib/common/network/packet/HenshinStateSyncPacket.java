@@ -1,15 +1,13 @@
 package com.jpigeon.ridebattlelib.common.network.packet;
 
-import com.jpigeon.ridebattlelib.RideBattleLib;
 import com.jpigeon.ridebattlelib.common.data.HenshinState;
+import com.jpigeon.ridebattlelib.common.network.RBLPacket;
 import com.jpigeon.ridebattlelib.common.util.PayloadUtils;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -20,23 +18,29 @@ public record HenshinStateSyncPacket(
         Identifier riderId,
         Identifier currentFormId,
         Identifier pendingFormId
-) implements CustomPacketPayload {
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(RideBattleLib.MODID, "henshin_state_sync");
-    public static final Type<@NotNull HenshinStateSyncPacket> TYPE = new Type<>(ID);
+) implements RBLPacket {
 
-    public static final StreamCodec<@NotNull RegistryFriendlyByteBuf, @NotNull HenshinStateSyncPacket> STREAM_CODEC =
+    public static final Identifier ID = RBLPacket.ofPath("henshin_state_sync");
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, HenshinStateSyncPacket> STREAM_CODEC =
             StreamCodec.composite(
                     UUIDUtil.STREAM_CODEC, HenshinStateSyncPacket::playerId,
                     ByteBufCodecs.BOOL, HenshinStateSyncPacket::isTransformed,
-                    ByteBufCodecs.fromCodec(HenshinState.CODEC), HenshinStateSyncPacket::state,
+                    StreamCodec.of(
+                            (buf, s) -> buf.writeByte(s.ordinal()),
+                            buf -> HenshinState.values()[buf.readByte()]
+                    ), HenshinStateSyncPacket::state,
                     PayloadUtils.nullableIdentifier(), HenshinStateSyncPacket::riderId,
                     PayloadUtils.nullableIdentifier(), HenshinStateSyncPacket::currentFormId,
                     PayloadUtils.nullableIdentifier(), HenshinStateSyncPacket::pendingFormId,
                     HenshinStateSyncPacket::new
             );
 
+    public static final Type<HenshinStateSyncPacket> TYPE = new Type<>(ID);
+
+
     @Override
-    public @NotNull Type<?> type() {
-        return TYPE;
+    public Identifier id() {
+        return ID;
     }
 }
