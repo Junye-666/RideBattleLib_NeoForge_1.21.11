@@ -13,10 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.Equippable;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class DynamicFormGenerator {
     private DynamicFormGenerator() {
@@ -110,15 +107,22 @@ public final class DynamicFormGenerator {
     public static Identifier generateId(Identifier riderId,
                                               Map<Identifier, ItemStack> items) {
         String baseId = riderId.getPath().replace("kamen_rider_", "");
+
+        // 按槽位排序，保证稳定性
+        List<Map.Entry<Identifier, ItemStack>> entries = new ArrayList<>(items.entrySet());
+        entries.sort(Map.Entry.comparingByKey());
+
         Set<String> itemPaths = new LinkedHashSet<>();
-        for (ItemStack stack : items.values()) {
-            if (!stack.isEmpty()) {
-                itemPaths.add(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
+        for (Map.Entry<Identifier, ItemStack> e : entries) {
+            if (!e.getValue().isEmpty()) {
+                itemPaths.add(BuiltInRegistries.ITEM.getKey(e.getValue().getItem()).getPath());
             }
         }
+
         if (itemPaths.size() <= 1) {
             String suffix = itemPaths.isEmpty() ? "empty" : itemPaths.iterator().next();
-            return Identifier.fromNamespaceAndPath(riderId.getNamespace(), baseId + "_" + suffix);
+            return Identifier.fromNamespaceAndPath(riderId.getNamespace(),
+                    baseId + "_" + suffix);
         }
 
         String common = findLongestCommonSuffix(itemPaths);
