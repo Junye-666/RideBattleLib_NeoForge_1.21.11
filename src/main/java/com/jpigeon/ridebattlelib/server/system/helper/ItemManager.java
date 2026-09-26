@@ -15,6 +15,8 @@ public class ItemManager {
         return INSTANCE;
     }
 
+    private ItemManager() {
+    }
 
     public void grantFormItems(Player player, Identifier formId) {
         FormConfig formConfig = RiderRegistry.getForm(player, formId);
