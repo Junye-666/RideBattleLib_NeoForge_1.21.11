@@ -35,6 +35,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -140,21 +141,22 @@ public final class RideBattleAPI {
      * 插入物品至驱动器
      * 注意：此方法不触发AUTO变身
      */
-    public static void insertItemToSlot(Player player, Identifier slotId, ItemStack stack) {
+    public static boolean insertItemToSlot(Player player, Identifier slotId, ItemStack stack) {
         if (Config.DEVELOPER_MODE.get())
             RideBattleLib.LOGGER.debug("为玩家{}往槽位{}存入物品{}", player.getName().getString(), slotId, stack.getDisplayName());
         if (player.level().isClientSide()) {
             ClientPacketDistributor.sendToServer(new InsertItemPacket(slotId, stack));
+            return true;
         } else {
-            getDriverSystem().insertItem(player, slotId, stack);
+            return getDriverSystem().insertItem(player, slotId, stack);
         }
     }
 
     /**
      * 快捷方法
      */
-    public static void insertItemToSlot(Player player, Identifier slotId, Item item) {
-        insertItemToSlot(player, slotId, item.getDefaultInstance());
+    public static boolean insertItemToSlot(Player player, Identifier slotId, Item item) {
+        return insertItemToSlot(player, slotId, item.getDefaultInstance());
     }
 
     /**
