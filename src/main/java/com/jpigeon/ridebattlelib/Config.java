@@ -1,13 +1,7 @@
 package com.jpigeon.ridebattlelib;
 
-
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-
-@EventBusSubscriber(modid = RideBattleLib.MODID)
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
@@ -66,22 +60,4 @@ public class Config {
     }
 
     static final ModConfigSpec SPEC = BUILDER.build();
-
-    @SubscribeEvent
-    static void onLoad(final ModConfigEvent event) {
-        if (Config.DEBUG_MODE.get()) {
-            RideBattleLib.LOGGER.debug(
-                    "Loaded config: penaltyEnabled={}, penaltyThreshold={}, penaltyReset = {}, cooldown={}s, explosionPower={}, knockbackStrength={}, keyCooldown={}, interactionCooldown={}, debugMode={}, developerMode={}",
-                    PENALTY_ENABLED.get(),
-                    PENALTY_THRESHOLD.get(),
-                    PENALTY_RESET_HEALTH.get(),
-                    COOLDOWN_DURATION.get(),
-                    EXPLOSION_POWER.get(),
-                    KNOCKBACK_STRENGTH.get(),
-                    KNOCKBACK_STRENGTH.get(),
-                    INTERACTION_COOLDOWN_MS.get(),
-                    DEBUG_MODE.get(),
-                    DEVELOPER_MODE.get());
-        }
-    }
 }

@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -238,6 +239,8 @@ public class RiderConfig {
 
         // 服务端：走遍历
         FindRiderConfigEvent event = new FindRiderConfigEvent(player);
+        NeoForge.EVENT_BUS.post(event);
+
         if (event.isCanceled()) return null;
         if (event.getConfig() != null) {
             RideBattleLib.LOGGER.debug("RiderConfig搜索被外部修改");

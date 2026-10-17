@@ -1,7 +1,9 @@
 package com.jpigeon.ridebattlelib.common.util;
 
 import com.jpigeon.ridebattlelib.RideBattleLib;
+import net.minecraft.server.MinecraftServer;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.util.Map;
 import java.util.UUID;
@@ -101,6 +103,8 @@ public final class ScheduleUtils {
 
     private static Side currentSide() {
         if (FMLEnvironment.getDist().isDedicatedServer()) return Side.SERVER;
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server != null && server.isSameThread()) return Side.SERVER;
         return Side.CLIENT;
     }
 
