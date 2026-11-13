@@ -2,6 +2,7 @@ package com.jpigeon.ridebattlelib.server.handler;
 
 import com.jpigeon.ridebattlelib.Config;
 import com.jpigeon.ridebattlelib.RideBattleLib;
+import com.jpigeon.ridebattlelib.common.api.RideBattleAPI;
 import com.jpigeon.ridebattlelib.common.config.FormConfig;
 import com.jpigeon.ridebattlelib.common.config.FormMatchEngine;
 import com.jpigeon.ridebattlelib.common.config.RiderConfig;
@@ -13,6 +14,7 @@ import com.jpigeon.ridebattlelib.common.registry.RiderArmorRegistry;
 import com.jpigeon.ridebattlelib.common.registry.RiderRegistry;
 import com.jpigeon.ridebattlelib.common.util.HenshinUtils;
 import com.jpigeon.ridebattlelib.common.util.RiderUtils;
+import com.jpigeon.ridebattlelib.server.event.UnhenshinEvent;
 import com.jpigeon.ridebattlelib.server.system.DriverSystem;
 import com.jpigeon.ridebattlelib.server.system.HenshinSystem;
 import com.jpigeon.ridebattlelib.server.system.helper.SyncManager;
@@ -20,7 +22,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.LogicalSide;
@@ -203,10 +207,58 @@ public class DriverHandler {
             stack.shrink(stack.getCount());
         }
     }
+    private static final Map<UUID, EquipmentSlot> PENDING_MANUAL_REMOVAL = new ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    public static void onUnhenshinPre(UnhenshinEvent.Pre event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUUID();
+
+        PENDING_MANUAL_REMOVAL.remove(uuid);
+
+        if (player.level().isClientSide()) return;
+
+        RiderConfig config = RiderRegistry.getRider(event.getRiderId());
+        if (config == null) return;
+        Item driverItem = config.getDriverItem();
+        if (driverItem == null || driverItem == Items.AIR) return;
+
+        EquipmentSlot slot = config.getDriverSlot();
+        ItemStack inSlot = player.getItemBySlot(slot);
+
+        if (inSlot.isEmpty() || !inSlot.is(driverItem)) {
+            PENDING_MANUAL_REMOVAL.put(uuid, slot);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onUnhenshinPost(UnhenshinEvent.Post event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUUID();
+        EquipmentSlot slot = PENDING_MANUAL_REMOVAL.remove(uuid);
+
+        // 非手动脱解除 → 保留 restore 结果
+        if (slot == null) return;
+        if (player.level().isClientSide()) return;
+
+        RiderConfig config = RiderRegistry.getRider(event.getRiderId());
+        if (config == null) return;
+        Item driverItem = config.getDriverItem();
+        if (driverItem == null || driverItem == Items.AIR) return;
+
+        // restoreOriginalGear 刚把驱动器塞回驱动槽 → 清空。
+        // 玩家自己的驱动器不会丢。
+        ItemStack inSlot = player.getItemBySlot(slot);
+        if (!inSlot.isEmpty() && inSlot.is(driverItem)) {
+            player.setItemSlot(slot, ItemStack.EMPTY);
+            RideBattleAPI.getArmorManager().syncEquipment(player);
+        }
+    }
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         LAST_INTERACTION_TIME.remove(event.getEntity().getUUID());
+        PENDING_MANUAL_REMOVAL.remove(event.getEntity().getUUID());
     }
 
     private static boolean isRiderDriverSlot(RiderConfig config, EquipmentSlot slot) {
